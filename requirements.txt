@@ -3,6 +3,7 @@ Werkzeug==3.0.1
 python-dotenv==1.0.1
 requests==2.31.0
 openai==1.39.0
+httpx==0.27.2
 gunicorn==21.2.0
 sqlite-utils==3.36
 flask-cors==4.0.0
