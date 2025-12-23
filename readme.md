@@ -208,7 +208,7 @@ ERINE_NOVITA/
 │   ├── github.html
 │   ├── learning.html
 │   ├── profile.html
-│   └── resume.html
+│   
 │
 ├── static/
 │   └── data/
@@ -276,11 +276,5 @@ python app.py
 * **Novita AI**
 * Open-source community
 
----
 
-## 📜 License
 
-Educational & hackathon use.
-Free to extend and modify.
-
-Just tell me 💪
