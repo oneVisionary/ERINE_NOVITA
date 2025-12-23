@@ -1,150 +1,191 @@
 
 
-# 🐜 MANTIS – AI-Powered Developer Learning & GitHub Intelligence Platform  
-### Powered by ERNIE 4.5 (Novita AI)
+# 🚀 MANTIS
 
-An **AI-driven learning and developer growth platform** that combines **personalized learning roadmaps**, **GitHub repository analysis**, and **AI-generated developer profiling** using **ERNIE 4.5 (via Novita AI)**.
+## AI-Powered Developer Learning & GitHub Intelligence Platform
 
-
-
-This platform helps developers:
-
-* Learn **any skill step-by-step**
-* Build **real-world, portfolio-ready projects**
-* Track learning progress
-* Analyze GitHub code quality
-* Generate AI-powered developer profiles and resumes
+### Built with **ERNIE 4.5 via Novita AI**
 
 ---
 
-## 🧠 AI Models Used & Their Impact
+## 🏆 Hackathon Submission
 
-### 🔹 ERNIE 4.5 (Baidu) via Novita AI
-
-**Model:** `baidu/ernie-4.5-21B-a3b-thinking`, `baidu/ernie-4.5-vl-424b-a47b`
-
-ERNIE is the **core intelligence** behind the platform.
-
-### How ERNIE impacts this application:
-
-#### 1️⃣ AI Learning Roadmap Generator
-
-* Converts **any user-entered skill** (e.g., Computer Vision, Web Development, ML, DevOps) into:
-
-  * 6 structured stages
-  * Grouped as **Basic / Intermediate / Advanced**
-  * Each stage contains **5 real-world projects**
-* Ensures projects are:
-
-  * Practical
-  * Recruiter-friendly
-  * GitHub-submittable
-* Adds:
-
-  * Skills learned per project
-  * Technical requirements
-  * High-quality reference links
-
+**Track:** Best ERNIE Multimodal / Reasoning Application
+**Inference Provider:** **Novita AI**
+**Core Models Used:** **ERNIE 4.5 Series (Baidu)**
 
 ---
 
-#### 2️⃣ AI Code Evaluation Engine
+## 📌 Overview
 
-* Reviews submitted code
-* Generates:
+**MANTIS** is an AI-powered platform that helps developers:
 
-  * Score (0–100)
-  * Actionable feedback
-  * Improved version of the code
-* Ensures beginner-friendly, instructor-level evaluation
+* 📊 Analyze real GitHub repositories
+* 🧠 Receive structured code quality feedback
+* 🗺️ Generate job-ready learning roadmaps
+* 🧪 Evaluate submitted code with AI mentoring
+* 📈 Track learning and skill progression over time
 
-📌 *Acts like a personal coding mentor.*
+Unlike generic AI tools, **MANTIS deeply inspects actual repositories** (files, README, code samples) and converts them into **measurable learning intelligence**.
 
 ---
 
-#### 3️⃣ GitHub Repository Analyzer
+## ✨ Core Novelty
 
-* Fetches public repositories
-* Uses AI to analyze:
+### 🔹 1. Repository-Level AI Intelligence (Not Prompt-Only)
+
+* Downloads **entire GitHub repo as ZIP**
+* Extracts:
+
+  * File types & structure
+  * README quality
+  * Representative code samples
+* Sends **structured repository context** to ERNIE
+* Produces **numerical scores + actionable insights**
+
+👉 This avoids hallucinations and ensures **evidence-based evaluation**
+
+---
+
+### 🔹 2. Multi-Model ERNIE Usage (Feature-Specific)
+
+| Feature                     | ERNIE Model Used                   | Why                                                  |
+| --------------------------- | ---------------------------------- | ---------------------------------------------------- |
+| GitHub repository analysis  | `baidu/ernie-4.5-vl-424b-a47b`     | Large-context + multimodal reasoning over many files |
+| Learning roadmap generation | `baidu/ernie-4.5-21B-a3b-thinking` | Strong instruction following + curriculum reasoning  |
+| Code evaluation & feedback  | `baidu/ernie-4.5-21B-a3b-thinking` | Step-by-step reasoning + scoring consistency         |
+
+👉 **Each model is chosen intentionally**, not randomly.
+
+---
+
+## 🧠 Features
+
+---
+
+### 1️⃣ GitHub Repository Analyzer (AI Code Review)
+
+**What it does:**
+
+* Accepts any public GitHub repo
+* Downloads & parses repository ZIP
+* Evaluates:
 
   * Documentation quality
   * Code quality
   * Maintainability
-* Tracks historical progress over time
-* Visualizes learning improvement using charts
+  * Estimated developer level
 
-📌 *Turns GitHub into a learning analytics dashboard.*
+**AI Output (strict JSON):**
+
+```json
+{
+  "documentation_score": 82,
+  "code_quality_score": 76,
+  "maintainability_score": 79,
+  "estimated_developer_level": "intermediate",
+  "strengths": [],
+  "weaknesses": [],
+  "improvement_suggestions": []
+}
+```
+
+📌 **Model used:**
+`baidu/ernie-4.5-vl-424b-a47b`
 
 ---
 
-#### 4️⃣ AI Developer Profile & Resume Generator
+### 2️⃣ Learning Roadmap Generator (Job-Ready Curriculum)
 
-* Summarizes developer growth
-* Identifies strengths, weaknesses, and improvement trends
+**Input:** Any skill (e.g. *Python*, *Computer Vision*, *Web Development*)
+
+**Output:**
+
+* EXACTLY **10 progressive roadmap items**
+* Beginner → Advanced
+* Each item includes:
+
+  * Skills
+  * Prerequisites
+  * Hands-on projects
+* Stored in DB & reusable
+
+📌 **Model used:**
+`baidu/ernie-4.5-21B-a3b-thinking`
+
+---
+
+### 3️⃣ AI Code Evaluation & Mentoring
+
+Users submit:
+
+* Task description
+* Source code
+
+AI returns:
+
+* Feedback list
+* Improved code
+* Numerical score (0–100)
+
+Uses **strict JSON contracts** for reliability.
+
+📌 **Model used:**
+`baidu/ernie-4.5-21B-a3b-thinking`
+
+---
+
+### 4️⃣ Learning Progress Tracking
+
+* Stores **historical repo analysis**
 * Generates:
 
-  * Professional profile summaries
-  * Resume-ready metrics
-  * Shareable developer reports
+  * Progress graphs
+  * Growth summaries
+  * Language-wise skill estimates
 
-📌 *Transforms raw GitHub data into career insights.*
-
----
-
-## ✨ Key Features
-
-### 🎓 Learning Zone
-
-* AI-generated learning roadmaps
-* Skill-based curriculum (any domain)
-* Project-based progression
-* GitHub submission validation
-* Locked/unlocked stages based on completion
-
-### 🧑‍💻 GitHub Intelligence
-
-* GitHub account integration
-* Repository syncing
-* AI-powered code analysis
-* Learning progress graphs
-* Improvement suggestions
-
-### 📊 Dashboard
-
-* Total users
-* Repositories analyzed
-* Average code quality
-* Learning analytics
-
-### 🪪 Developer Profile
-
-* AI-generated performance summary
-* Primary language detection
-* Growth trend analysis
-* Shareable profile & resume export
+This turns GitHub activity into **learning analytics**.
 
 ---
 
-## 🛠 Tech Stack
+### 5️⃣ AI-Generated Developer Profile & Resume Signals
 
-**Backend**
+Based on repository history:
+
+* Average scores
+* Strongest languages
+* Overall growth trend
+* Skill maturity summary
+
+📌 Designed for **students, self-learners & early-career developers**
+
+---
+
+## 🏗️ Technical Architecture
+
+### Backend
 
 * Python
 * Flask
 * SQLite
-* OpenAI-compatible SDK (Novita AI)
+* Flask-CORS
 
-**Frontend**
+### AI Layer
 
-* HTML (Jinja templates)
-* Bootstrap
-* JavaScript
-* Chart.js
-* ACE Editor
+* ERNIE 4.5 models via **Novita AI**
+* OpenAI-compatible API
+* Strict JSON-only prompting
+* Regex-based safe extraction
 
-**AI**
+### Data Flow
 
-* ERNIE 4.5 (via Novita AI)
+```
+GitHub Repo → ZIP Download
+           → File & Code Parsing
+           → ERNIE Analysis
+           → Structured Scores
+           → Learning Feedback Loop
+```
 
 ---
 
@@ -153,121 +194,93 @@ ERNIE is the **core intelligence** behind the platform.
 ```
 ERINE_NOVITA/
 │
-├── app.py
-├── users.db
-├── .env
+├── app.py                     # Main Flask application
+├── users.db                   # SQLite database
+├── requirements.txt
+├── runtime.txt
+│
 ├── services/
-│   ├── github_service.py
-│   └── github_analyzer.py
+│   ├── github_service.py      # GitHub API utilities
+│   └── github_analyzer.py     # ERNIE-powered repo analysis
 │
 ├── templates/
-│   ├── login.html
-│   ├── register.html
-│   ├── dashboard.html
+│   ├── index.html
 │   ├── github.html
 │   ├── learning.html
 │   ├── profile.html
 │   └── resume.html
 │
 ├── static/
-│   ├── assets/
+│   └── data/
 │
 └── README.md
 ```
 
 ---
 
-## ⚙️ Local Setup & Installation
+## ⚙️ Local Setup
 
-### 1️⃣ Clone the Repository
+### 1️⃣ Clone
 
 ```bash
-git clone https://github.com/your-username/ERINE_NOVITA.git
+git clone https://github.com/oneVisionary/ERINE_NOVITA.git
 cd ERINE_NOVITA
 ```
 
----
-
-### 2️⃣ Create Virtual Environment (Recommended)
+### 2️⃣ Environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate   # macOS/Linux
-venv\Scripts\activate      # Windows
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
----
-
-### 3️⃣ Install Dependencies
-
-```bash
-pip install flask python-dotenv werkzeug openai
-```
-
----
-
-### 4️⃣ Setup Environment Variables
-
-Create a `.env` file in the root directory:
+### 3️⃣ Configure `.env`
 
 ```env
-NOVITA_API_KEY=your_novita_api_key_here
+NOVITA_API_KEY=your_novita_api_key
+FLASK_SECRET_KEY=your_secret_key
 ```
 
-⚠️ **Important:**
-You must have access to **Novita AI** and the **ERNIE model**.
-
----
-
-### 5️⃣ Run the Application
+### 4️⃣ Run
 
 ```bash
 python app.py
 ```
 
-The app will start at:
-
-```
-http://127.0.0.1:5000
-```
-
 ---
 
-## 🚀 How to Use
+## 🎯 Why This Project Stands Out
 
-1. **Sign up / Log in**
-2. **Connect GitHub account**
-3. Navigate to **Learning Zone**
-4. Enter any skill (e.g., `computer vision`)
-5. Generate AI learning roadmap
-6. Complete projects & submit GitHub links
-7. Analyze repositories
-8. View AI-generated profile & resume
+✔ Uses **real repositories**, not toy examples
+✔ ERNIE used as a **reasoning engine**, not a chatbot
+✔ Strong **JSON contracts** & reliability handling
+✔ Clear **learning feedback loop**
+✔ Production-ready Flask architecture
 
 ---
 
 ## 🔮 Future Enhancements
 
-* Role-based learning paths (Frontend, Backend, ML Engineer)
-* Auto GitHub PR reviews
-* Certification generation
-* AI interview preparation
-* Team & classroom mode
-* Cloud deployment (Docker + AWS)
+* Auto PR review assistant
+* Team dashboards for classrooms
+* Multi-agent curriculum planning
+* Resume PDF export
+* Cloud deployment & CI integration
 
 ---
 
-## ❤️ Acknowledgements
+## 🙏 Acknowledgements
 
-* **Baidu ERNIE AI**
-* **Novita AI Platform**
+* **Baidu ERNIE Team**
+* **Novita AI**
 * Open-source community
-* Hackathon inspiration
 
 ---
 
 ## 📜 License
 
-This project is for **educational and hackathon use**.
-You are free to modify and extend it.
+Educational & hackathon use.
+Free to extend and modify.
 
+Just tell me 💪
