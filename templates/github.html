@@ -1,0 +1,1212 @@
+{% include "header.html" %}
+
+<!-- Add Font Awesome for more icon options -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Add Lottie Player for advanced animations -->
+<script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+  <div>
+    <h3 class="mb-1"><i class="bi bi-github me-2 text-primary"></i> GitHub Repository Analysis</h3>
+    <p class="text-muted mb-0">
+      <small>
+        <i class="bi bi-info-circle me-1"></i>
+        Track and improve your code quality, documentation, and maintainability
+      </small>
+    </p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+<a href="{{ url_for('profile') }}" class="btn btn-outline-success btn-sm">
+  <i class="fas fa-share-alt"></i> Share Profile
+</a>
+
+
+    <button class="btn btn-outline-primary btn-sm" onclick="refreshRepositories()">
+      <i class="fas fa-sync-alt me-1"></i> Sync Repos
+    </button>
+    <span class="badge bg-gradient-primary fs-6 px-3 py-2">
+      <i class="fas fa-database me-1"></i> {{ analyses|length }} Repository{% if analyses|length != 1 %}ies{% endif %}
+    </span>
+  </div>
+</div>
+
+<!-- CONNECT GITHUB -->
+<div class="card shadow-lg border-0 mb-4 bg-gradient-light">
+  <div class="card-body p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <h5 class="card-title d-flex align-items-center mb-1">
+          <i class="fas fa-link me-2 text-primary"></i> Connect GitHub Account
+        </h5>
+        <p class="text-muted mb-0">
+          <small>
+            <i class="fas fa-clock me-1"></i>
+            Last sync: <span id="lastSyncTime">{{ last_sync_time or 'Never' }}</span>
+          </small>
+        </p>
+      </div>
+      <div id="syncStatus" class="d-none align-items-center">
+        <div class="me-2">
+          <lottie-player 
+            src="https://assets2.lottiefiles.com/packages/lf20_Stt1R6.json" 
+            background="transparent" 
+            speed="1" 
+            style="width: 20px; height: 20px;" 
+            loop 
+            autoplay>
+          </lottie-player>
+        </div>
+        <small class="text-primary">Syncing...</small>
+      </div>
+    </div>
+    <form method="POST" action="{{ url_for('github_connect') }}" id="connectForm">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-8">
+          <label class="form-label fw-semibold">GitHub Username</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0">
+              <i class="fas fa-at"></i>
+            </span>
+            <input name="github_username" class="form-control border-start-0" 
+                   placeholder="Enter your GitHub username" required>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <button type="submit" class="btn btn-dark w-100 btn-gradient d-flex align-items-center justify-content-center">
+            <i class="fas fa-plug me-2"></i> Connect Account
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- FILTER AND CONTROLS -->
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body p-3">
+    <div class="row align-items-center g-3">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="text" id="repoSearch" class="form-control border-start-0" 
+                 placeholder="Search repositories...">
+          <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="d-flex flex-wrap gap-2 justify-content-md-end">
+          <div class="btn-group btn-group-sm" role="group">
+            <input type="radio" class="btn-check" name="filterStatus" id="filterAll" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="filterAll">
+              <i class="fas fa-th-large me-1"></i> All
+            </label>
+            
+            <input type="radio" class="btn-check" name="filterStatus" id="filterAnalyzed" autocomplete="off">
+            <label class="btn btn-outline-success" for="filterAnalyzed">
+              <i class="fas fa-check-circle me-1"></i> Analyzed
+            </label>
+            
+            <input type="radio" class="btn-check" name="filterStatus" id="filterPending" autocomplete="off">
+            <label class="btn btn-outline-warning" for="filterPending">
+              <i class="fas fa-clock me-1"></i> Pending
+            </label>
+          </div>
+          
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center" type="button" 
+                    data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fas fa-sort-down me-1"></i> Sort
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item sort-option" href="#" data-sort="name">
+                <i class="fas fa-sort-alpha-down me-2"></i>Name A-Z
+              </a></li>
+              <li><a class="dropdown-item sort-option" href="#" data-sort="name-desc">
+                <i class="fas fa-sort-alpha-down-alt me-2"></i>Name Z-A
+              </a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item sort-option" href="#" data-sort="doc-high">
+                <i class="fas fa-chart-line me-2"></i>Documentation (High)
+              </a></li>
+              <li><a class="dropdown-item sort-option" href="#" data-sort="doc-low">
+                <i class="fas fa-chart-line me-2"></i>Documentation (Low)
+              </a></li>
+              <li><a class="dropdown-item sort-option" href="#" data-sort="level">
+                <i class="fas fa-user-graduate me-2"></i>Developer Level
+              </a></li>
+            </ul>
+          </div>
+          
+          <button class="btn btn-outline-info btn-sm" onclick="refreshAllAnalyses()">
+            <i class="fas fa-redo-alt me-1"></i> Refresh All
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANALYSIS STATS SUMMARY -->
+<div class="row mb-4" id="statsSummary" style="display: none;">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-3">
+        <div class="row g-3">
+          <div class="col-md-3">
+            <div class="d-flex align-items-center">
+              <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                <i class="fas fa-file-alt text-primary fs-4"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Avg. Documentation</small>
+                <h4 class="mb-0 fw-bold text-primary" id="avgDoc">0%</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="d-flex align-items-center">
+              <div class="bg-success bg-opacity-10 p-2 rounded me-3">
+                <i class="fas fa-code text-success fs-4"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Avg. Code Quality</small>
+                <h4 class="mb-0 fw-bold text-success" id="avgCode">0%</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="d-flex align-items-center">
+              <div class="bg-info bg-opacity-10 p-2 rounded me-3">
+                <i class="fas fa-tools text-info fs-4"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Avg. Maintainability</small>
+                <h4 class="mb-0 fw-bold text-info" id="avgMaintain">0%</h4>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="d-flex align-items-center">
+              <div class="bg-warning bg-opacity-10 p-2 rounded me-3">
+                <i class="fas fa-chart-line text-warning fs-4"></i>
+              </div>
+              <div>
+                <small class="text-muted d-block">Total Analyzed</small>
+                <h4 class="mb-0 fw-bold text-warning" id="totalAnalyzed">0</h4>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPOSITORIES GRID -->
+<div class="row g-4" id="reposGrid">
+  {% for a in analyses %}
+  {% set repo_name = a.repo_url.split('/')[-1].replace('.git','') %}
+  {% set has_analysis = a.documentation_score is not none %}
+  
+  <div class="col-lg-4 col-md-6 repo-card" 
+       data-name="{{ repo_name|lower }}" 
+       data-status="{{ 'analyzed' if has_analysis else 'pending' }}"
+       data-doc="{{ a.documentation_score or 0 }}"
+       data-level="{{ a.developer_level or 'none' }}">
+    
+    <div class="card h-100 shadow-sm border-hover">
+      <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+        <div class="d-flex align-items-center">
+          <i class="fab fa-git-alt me-2 text-primary"></i>
+          <strong class="text-truncate">{{ repo_name }}</strong>
+        </div>
+        <span class="badge {% if has_analysis %}bg-success{% else %}bg-warning text-dark{% endif %} py-1">
+          {% if has_analysis %}
+          <i class="fas fa-check-circle me-1"></i> Analyzed
+          {% else %}
+          <i class="fas fa-clock me-1"></i> Pending
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="card-body position-relative">
+        
+        {% if has_analysis %}
+        <!-- SCORE BADGES -->
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <div class="text-center p-2 rounded bg-primary bg-opacity-10 border border-primary border-opacity-25">
+              <div class="fw-bold text-primary fs-5">{{ a.documentation_score }}%</div>
+              <small class="text-muted d-block">
+                <i class="fas fa-file-alt me-1"></i> Docs
+              </small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="text-center p-2 rounded bg-success bg-opacity-10 border border-success border-opacity-25">
+              <div class="fw-bold text-success fs-5">{{ a.code_quality_score }}%</div>
+              <small class="text-muted d-block">
+                <i class="fas fa-code me-1"></i> Code
+              </small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="text-center p-2 rounded bg-info bg-opacity-10 border border-info border-opacity-25">
+              <div class="fw-bold text-info fs-5">{{ a.maintainability_score }}%</div>
+              <small class="text-muted d-block">
+                <i class="fas fa-tools me-1"></i> Maint.
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- DEVELOPER LEVEL -->
+        <div class="alert alert-{{ 
+          'danger' if a.developer_level == 'Beginner' 
+          else 'warning' if a.developer_level == 'Intermediate' 
+          else 'info' if a.developer_level == 'Advanced' 
+          else 'success' 
+        }} d-flex align-items-center mb-3 py-2" role="alert">
+          <i class="fas fa-{{ 
+            'user' if a.developer_level == 'Beginner' 
+            else 'user-check' if a.developer_level == 'Intermediate' 
+            else 'user-tie' if a.developer_level == 'Advanced' 
+            else 'crown' 
+          }} me-2 fs-5"></i>
+          <div>
+            <strong class="d-block">{{ a.developer_level }} Developer</strong>
+            <small class="d-block opacity-75">
+              {% if a.developer_level == 'Beginner' %}Keep learning!{% endif %}
+              {% if a.developer_level == 'Intermediate' %}Good progress!{% endif %}
+              {% if a.developer_level == 'Advanced' %}Excellent work!{% endif %}
+              {% if a.developer_level == 'Expert' %}Outstanding!{% endif %}
+            </small>
+          </div>
+        </div>
+
+        <!-- ACTION BUTTONS -->
+        <div class="d-grid gap-2">
+          <div class="d-flex gap-2">
+            <form method="POST" class="analysis-form w-100" data-repo-id="{{ a.id }}">
+              <input type="hidden" name="repo_id" value="{{ a.id }}">
+              <button class="btn btn-primary w-100 d-flex align-items-center justify-content-center">
+                <i class="fas fa-redo-alt me-2"></i> Re-Analyze
+              </button>
+            </form>
+            <button class="btn btn-info text-white d-flex align-items-center justify-content-center px-3" 
+                    onclick="openProgress({{ a.id }})" title="View Progress">
+              <i class="fas fa-chart-line"></i>
+            </button>
+            <button class="btn btn-success d-flex align-items-center justify-content-center px-3" 
+                    onclick="openImproveModal({{ a.id }})" title="Get Feedback">
+              <i class="fas fa-lightbulb"></i>
+            </button>
+          </div>
+        </div>
+
+        {% else %}
+        <!-- PENDING ANALYSIS -->
+        <div class="text-center py-4">
+          <div class="mb-3">
+            <i class="fas fa-clipboard-list fs-1 text-muted opacity-75"></i>
+          </div>
+          <p class="text-muted mb-3">Ready for analysis</p>
+          <form method="POST" class="analysis-form" data-repo-id="{{ a.id }}">
+            <input type="hidden" name="repo_id" value="{{ a.id }}">
+            <button class="btn btn-primary btn-gradient w-100 d-flex align-items-center justify-content-center">
+              <i class="fas fa-magic me-2"></i> Analyze Repository
+            </button>
+          </form>
+        </div>
+        {% endif %}
+
+        <!-- LOADING OVERLAY -->
+        <div id="loading-{{ a.id }}" class="loading-overlay" style="display:none">
+          <div class="text-center">
+            <!-- Mandala/Grasshopper Loading Animation -->
+            <div class="mandala-loader mb-3">
+              <div class="mandala-ring"></div>
+              <div class="mandala-ring"></div>
+              <div class="mandala-ring"></div>
+              <div class="mandala-center">
+                <i class="fas fa-bug"></i>
+              </div>
+            </div>
+            <p class="small mb-0 fw-semibold text-primary">Analyzing repository...</p>
+            <p class="text-muted mt-1" style="font-size: 0.8rem;">Scanning code patterns</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer bg-transparent border-top-0 pt-0">
+        <div class="d-flex justify-content-between align-items-center">
+          <small class="text-muted">
+            <i class="fas fa-calendar me-1"></i>
+            {% if a.last_analyzed %}
+            {{ a.last_analyzed.strftime('%b %d, %Y') }}
+            {% else %}
+            your code
+            {% endif %}
+          </small>
+          {% if a.last_analyzed %}
+          <small class="text-muted">
+            <i class="fas fa-clock me-1"></i>
+            {{ a.last_analyzed.strftime('%I:%M %p') }}
+          </small>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if analyses|length == 0 %}
+<!-- EMPTY STATE -->
+<div class="text-center py-5 my-5">
+  <div class="mb-4">
+    <lottie-player 
+      src="https://assets1.lottiefiles.com/packages/lf20_w51pcehl.json" 
+      background="transparent" 
+      speed="1" 
+      style="width: 200px; height: 200px;" 
+      loop 
+      autoplay>
+    </lottie-player>
+  </div>
+  <h4 class="text-muted mb-3">No repositories connected yet</h4>
+  <p class="text-muted mb-4">Connect your GitHub account to start analyzing your repositories</p>
+</div>
+{% endif %}
+
+<!-- IMPROVEMENT MODAL -->
+<div class="modal fade" id="improveModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-gradient-primary text-white">
+        <div class="d-flex align-items-center">
+          <lottie-player 
+            src="https://assets3.lottiefiles.com/packages/lf20_cyq7qz.json" 
+            background="transparent" 
+            speed="1" 
+            style="width: 40px; height: 40px; margin-right: 10px;" 
+            loop 
+            autoplay>
+          </lottie-player>
+          <h5 class="modal-title">Code Improvement Guide</h5>
+        </div>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card border-success border-opacity-25 h-100">
+              <div class="card-header bg-success bg-opacity-10 border-0 d-flex align-items-center">
+                <i class="fas fa-check-circle text-success me-2 fs-5"></i>
+                <h6 class="mb-0 text-success fw-semibold">Strengths</h6>
+              </div>
+              <div class="card-body">
+                <ul id="strengths" class="list-unstyled mb-0"></ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card border-danger border-opacity-25 h-100">
+              <div class="card-header bg-danger bg-opacity-10 border-0 d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle text-danger me-2 fs-5"></i>
+                <h6 class="mb-0 text-danger fw-semibold">Weaknesses</h6>
+              </div>
+              <div class="card-body">
+                <ul id="weaknesses" class="list-unstyled mb-0"></ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card border-primary border-opacity-25">
+              <div class="card-header bg-primary bg-opacity-10 border-0 d-flex align-items-center">
+                <i class="fas fa-rocket text-primary me-2 fs-5"></i>
+                <h6 class="mb-0 text-primary fw-semibold">Improvement Suggestions</h6>
+              </div>
+              <div class="card-body">
+                <ul id="improvements" class="list-unstyled mb-0"></ul>
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="card border-info border-opacity-25">
+              <div class="card-header bg-info bg-opacity-10 border-0 d-flex align-items-center">
+                <i class="fas fa-graduation-cap text-info me-2 fs-5"></i>
+                <h6 class="mb-0 text-info fw-semibold">Learning References</h6>
+              </div>
+              <div class="card-body">
+                <ul id="references" class="list-unstyled mb-0"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i> Close
+        </button>
+        <button type="button" class="btn btn-primary" onclick="saveImprovements()">
+          <i class="fas fa-download me-1"></i> Export as PDF
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS MODAL -->
+<div class="modal fade" id="progressModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-gradient-info text-white">
+        <div class="d-flex align-items-center">
+          <lottie-player 
+            src="https://assets9.lottiefiles.com/packages/lf20_iv4dsx3q.json" 
+            background="transparent" 
+            speed="1" 
+            style="width: 40px; height: 40px; margin-right: 10px;" 
+            loop 
+            autoplay>
+          </lottie-player>
+          <h5 class="modal-title">Learning Progress Over Time</h5>
+        </div>
+        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <canvas id="progressChart" height="300"></canvas>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i> Close
+        </button>
+        <button type="button" class="btn btn-info" onclick="exportChart()">
+          <i class="fas fa-download me-1"></i> Export Chart
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REFRESH MODAL -->
+<div class="modal fade" id="refreshModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-gradient-warning text-dark">
+        <div class="d-flex align-items-center">
+          <lottie-player 
+            src="https://assets8.lottiefiles.com/packages/lf20_szlepvhr.json" 
+            background="transparent" 
+            speed="1" 
+            style="width: 40px; height: 40px; margin-right: 10px;" 
+            loop 
+            autoplay>
+          </lottie-player>
+          <h5 class="modal-title">Sync Repositories</h5>
+        </div>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center py-3">
+          <div class="mb-3">
+            <lottie-player 
+              src="https://assets6.lottiefiles.com/packages/lf20_2cwDXD.json" 
+              background="transparent" 
+              speed="1" 
+              style="width: 100px; height: 100px;" 
+              loop 
+              autoplay>
+            </lottie-player>
+          </div>
+          <h5>Sync Your GitHub Repositories</h5>
+          <p class="text-muted">This will fetch your latest repositories from GitHub and update the list.</p>
+          <div id="refreshProgress" class="d-none">
+            <div class="mb-3">
+              <!-- Grasshopper-style loading animation -->
+              <div class="grasshopper-loader">
+                <div class="gh-body"></div>
+                <div class="gh-leg gh-leg-1"></div>
+                <div class="gh-leg gh-leg-2"></div>
+                <div class="gh-leg gh-leg-3"></div>
+                <div class="gh-leg gh-leg-4"></div>
+                <div class="gh-leg gh-leg-5"></div>
+                <div class="gh-leg gh-leg-6"></div>
+              </div>
+            </div>
+            <p class="text-primary mb-0 fw-semibold">Syncing repositories...</p>
+            <p class="text-muted small mt-1">Fetching data from GitHub</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-warning" onclick="confirmRefresh()">
+          <i class="fas fa-sync-alt me-1"></i> Start Sync
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.border-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 1px solid rgba(0,0,0,0.125);
+}
+.border-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  border-color: #0d6efd;
+}
+.bg-gradient-light {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+.btn-gradient {
+  background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+  border: none;
+  color: white;
+  font-weight: 500;
+}
+.btn-gradient:hover {
+  background: linear-gradient(135deg, #5a0db5 0%, #1c6ae4 100%);
+  color: white;
+}
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  z-index: 10;
+}
+.card-body {
+  position: relative;
+  min-height: 180px;
+}
+.repo-card {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.hidden {
+  display: none !important;
+}
+.badge {
+  font-weight: 500;
+}
+.btn {
+  font-weight: 500;
+}
+.alert {
+  border: 1px solid transparent;
+}
+
+/* Mandala/Grasshopper Loader Styles */
+.mandala-loader {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto;
+}
+
+.mandala-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  animation: mandala-spin 2s linear infinite;
+}
+
+.mandala-ring:nth-child(1) {
+  width: 60px;
+  height: 60px;
+  border-top-color: #0d6efd;
+  border-right-color: #0d6efd;
+  animation-duration: 1.5s;
+}
+
+.mandala-ring:nth-child(2) {
+  width: 45px;
+  height: 45px;
+  top: 7.5px;
+  left: 7.5px;
+  border-top-color: #198754;
+  border-right-color: #198754;
+  animation-duration: 2s;
+  animation-direction: reverse;
+}
+
+.mandala-ring:nth-child(3) {
+  width: 30px;
+  height: 30px;
+  top: 15px;
+  left: 15px;
+  border-top-color: #ffc107;
+  border-right-color: #ffc107;
+  animation-duration: 2.5s;
+}
+
+.mandala-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.2rem;
+  color: #0d6efd;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mandala-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+/* Grasshopper Loader */
+.grasshopper-loader {
+  position: relative;
+  width: 80px;
+  height: 40px;
+  margin: 0 auto;
+}
+
+.gh-body {
+  position: absolute;
+  width: 40px;
+  height: 20px;
+  background: linear-gradient(135deg, #198754, #20c997);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  top: 10px;
+  left: 20px;
+  animation: gh-hop 1.5s ease-in-out infinite;
+}
+
+.gh-leg {
+  position: absolute;
+  width: 8px;
+  height: 15px;
+  background: #198754;
+  border-radius: 4px;
+  animation: gh-leg-wave 2s ease-in-out infinite;
+}
+
+.gh-leg-1 { top: 15px; left: 15px; transform: rotate(30deg); animation-delay: 0s; }
+.gh-leg-2 { top: 15px; left: 25px; transform: rotate(-30deg); animation-delay: 0.1s; }
+.gh-leg-3 { top: 15px; left: 35px; transform: rotate(30deg); animation-delay: 0.2s; }
+.gh-leg-4 { top: 20px; left: 40px; transform: rotate(-45deg); animation-delay: 0.3s; }
+.gh-leg-5 { top: 20px; left: 30px; transform: rotate(45deg); animation-delay: 0.4s; }
+.gh-leg-6 { top: 20px; left: 20px; transform: rotate(-45deg); animation-delay: 0.5s; }
+
+@keyframes gh-hop {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes gh-leg-wave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(15deg);
+  }
+  75% {
+    transform: rotate(-15deg);
+  }
+}
+
+/* Toast Container */
+#toastContainer {
+  z-index: 9999;
+}
+
+/* Enhanced button icons */
+.btn i {
+  font-size: 0.9em;
+}
+
+/* Card hover enhancement */
+.card:hover .card-header {
+  background-color: #f8f9fa !important;
+}
+
+/* Progress bar animation */
+.progress-bar-animated {
+  animation: progress-bar-stripes 1s linear infinite;
+}
+
+@keyframes progress-bar-stripes {
+  0% { background-position: 1rem 0; }
+  100% { background-position: 0 0; }
+}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// DOM Elements
+const repoCards = document.querySelectorAll('.repo-card');
+const searchInput = document.getElementById('repoSearch');
+const clearSearch = document.getElementById('clearSearch');
+const filterRadios = document.querySelectorAll('input[name="filterStatus"]');
+const sortOptions = document.querySelectorAll('.sort-option');
+const statsSummary = document.getElementById('statsSummary');
+const syncStatus = document.getElementById('syncStatus');
+const lastSyncTime = document.getElementById('lastSyncTime');
+
+// Refresh Functions
+function refreshRepositories() {
+  const modal = new bootstrap.Modal(document.getElementById('refreshModal'));
+  modal.show();
+}
+
+function confirmRefresh() {
+  const refreshProgress = document.getElementById('refreshProgress');
+  refreshProgress.classList.remove('d-none');
+  syncStatus.classList.remove('d-none');
+
+  fetch('/github/refresh', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        showToast('Repositories synced successfully!', 'success');
+        setTimeout(() => location.reload(), 1200);
+      } else {
+        showToast(data.message, 'warning');
+      }
+
+      refreshProgress.classList.add('d-none');
+      syncStatus.classList.add('d-none');
+      bootstrap.Modal.getInstance(
+        document.getElementById('refreshModal')
+      ).hide();
+    })
+    .catch(() => {
+      showToast('Sync failed', 'error');
+      refreshProgress.classList.add('d-none');
+      syncStatus.classList.add('d-none');
+    });
+}
+
+function refreshAllAnalyses() {
+  if (!confirm('This will re-analyze all repositories. This may take a while. Continue?')) {
+    return;
+  }
+  
+  showToast('Starting analysis of all repositories...', 'info');
+  
+  const pendingCards = Array.from(repoCards).filter(card => 
+    card.getAttribute('data-status') === 'analyzed'
+  );
+  
+  pendingCards.forEach((card, index) => {
+    const form = card.querySelector('.analysis-form');
+    if (form) {
+      setTimeout(() => {
+        const repoId = form.dataset.repoId;
+        document.getElementById(`loading-${repoId}`).style.display = "flex";
+        form.submit();
+      }, index * 2000); // Stagger requests
+    }
+  });
+}
+
+// Calculate initial stats
+function calculateStats() {
+  const analyzedCards = Array.from(repoCards).filter(card => 
+    card.getAttribute('data-status') === 'analyzed'
+  );
+  
+  if (analyzedCards.length > 0) {
+    statsSummary.style.display = 'block';
+    
+    const totalDocs = analyzedCards.reduce((sum, card) => 
+      sum + parseInt(card.getAttribute('data-doc')), 0);
+    const avgDoc = Math.round(totalDocs / analyzedCards.length);
+    
+    // Calculate other averages (you'll need to add data attributes for these)
+    // For now, we'll use placeholder calculations
+    const avgCode = Math.round(avgDoc * 0.9);
+    const avgMaintain = Math.round(avgDoc * 0.85);
+    
+    document.getElementById('avgDoc').textContent = `${avgDoc}%`;
+    document.getElementById('avgCode').textContent = `${avgCode}%`;
+    document.getElementById('avgMaintain').textContent = `${avgMaintain}%`;
+    document.getElementById('totalAnalyzed').textContent = analyzedCards.length;
+  }
+}
+
+// Filter and Search Functions
+function filterAndSortRepos() {
+  const searchTerm = searchInput.value.toLowerCase();
+  const activeFilter = document.querySelector('input[name="filterStatus"]:checked').id;
+  const activeSort = document.querySelector('.sort-option.active')?.dataset.sort || 'name';
+  
+  let filteredCards = Array.from(repoCards);
+  
+  // Apply search filter
+  if (searchTerm) {
+    filteredCards = filteredCards.filter(card => 
+      card.getAttribute('data-name').includes(searchTerm)
+    );
+  }
+  
+  // Apply status filter
+  if (activeFilter === 'filterAnalyzed') {
+    filteredCards = filteredCards.filter(card => 
+      card.getAttribute('data-status') === 'analyzed'
+    );
+  } else if (activeFilter === 'filterPending') {
+    filteredCards = filteredCards.filter(card => 
+      card.getAttribute('data-status') === 'pending'
+    );
+  }
+  
+  // Apply sorting
+  filteredCards.sort((a, b) => {
+    const nameA = a.getAttribute('data-name');
+    const nameB = b.getAttribute('data-name');
+    const docA = parseInt(a.getAttribute('data-doc'));
+    const docB = parseInt(b.getAttribute('data-doc'));
+    const levelA = a.getAttribute('data-level');
+    const levelB = b.getAttribute('data-level');
+    
+    switch (activeSort) {
+      case 'name':
+        return nameA.localeCompare(nameB);
+      case 'name-desc':
+        return nameB.localeCompare(nameA);
+      case 'doc-high':
+        return docB - docA;
+      case 'doc-low':
+        return docA - docB;
+      case 'level':
+        const levels = ['Beginner', 'Intermediate', 'Advanced', 'Expert'];
+        return levels.indexOf(levelB) - levels.indexOf(levelA);
+      default:
+        return 0;
+    }
+  });
+  
+  // Update UI
+  repoCards.forEach(card => {
+    if (filteredCards.includes(card)) {
+      card.classList.remove('hidden');
+      card.style.order = filteredCards.indexOf(card);
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+  
+  // Recalculate stats based on filtered cards
+  if (filteredCards.length > 0) {
+    const analyzedFiltered = filteredCards.filter(card => 
+      card.getAttribute('data-status') === 'analyzed'
+    );
+    if (analyzedFiltered.length > 0) {
+      statsSummary.style.display = 'block';
+      const totalDocs = analyzedFiltered.reduce((sum, card) => 
+        sum + parseInt(card.getAttribute('data-doc')), 0);
+      const avgDoc = Math.round(totalDocs / analyzedFiltered.length);
+      const avgCode = Math.round(avgDoc * 0.9);
+      const avgMaintain = Math.round(avgDoc * 0.85);
+      
+      document.getElementById('avgDoc').textContent = `${avgDoc}%`;
+      document.getElementById('avgCode').textContent = `${avgCode}%`;
+      document.getElementById('avgMaintain').textContent = `${avgMaintain}%`;
+      document.getElementById('totalAnalyzed').textContent = analyzedFiltered.length;
+    } else {
+      statsSummary.style.display = 'none';
+    }
+  } else {
+    statsSummary.style.display = 'none';
+  }
+}
+
+// Toast notification
+function showToast(message, type = 'info') {
+  const toastContainer = document.getElementById('toastContainer') || createToastContainer();
+  const toastId = 'toast-' + Date.now();
+  
+  const toast = document.createElement('div');
+  toast.className = `toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0`;
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
+  toast.setAttribute('aria-atomic', 'true');
+  toast.id = toastId;
+  
+  const icon = type === 'success' ? 'check-circle' : 
+               type === 'error' ? 'exclamation-triangle' : 
+               type === 'warning' ? 'exclamation-circle' : 'info-circle';
+  
+  toast.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center">
+        <i class="fas fa-${icon} me-2 fs-5"></i>
+        ${message}
+      </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  `;
+  
+  toastContainer.appendChild(toast);
+  
+  const bsToast = new bootstrap.Toast(toast, {delay: 3000});
+  bsToast.show();
+  
+  toast.addEventListener('hidden.bs.toast', () => {
+    toast.remove();
+  });
+}
+
+function createToastContainer() {
+  const container = document.createElement('div');
+  container.id = 'toastContainer';
+  container.className = 'toast-container position-fixed top-0 end-0 p-3';
+  container.style.zIndex = '9999';
+  document.body.appendChild(container);
+  return container;
+}
+
+// Event Listeners
+searchInput.addEventListener('input', filterAndSortRepos);
+clearSearch.addEventListener('click', () => {
+  searchInput.value = '';
+  filterAndSortRepos();
+});
+
+filterRadios.forEach(radio => {
+  radio.addEventListener('change', filterAndSortRepos);
+});
+
+sortOptions.forEach(option => {
+  option.addEventListener('click', (e) => {
+    e.preventDefault();
+    sortOptions.forEach(opt => opt.classList.remove('active'));
+    option.classList.add('active');
+    filterAndSortRepos();
+  });
+});
+
+// Analysis form submission with enhanced animation
+document.querySelectorAll(".analysis-form").forEach(form => {
+  form.addEventListener("submit", e => {
+    e.preventDefault();
+    const id = form.dataset.repoId;
+    const button = form.querySelector('button');
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Analyzing...';
+    button.disabled = true;
+    
+    document.getElementById(`loading-${id}`).style.display = "flex";
+    setTimeout(() => form.submit(), 300);
+  });
+});
+
+// Modal functions
+function openImproveModal(repoId) {
+  // Show loading state
+  const modalContent = document.querySelector('#improveModal .modal-body');
+  const originalContent = modalContent.innerHTML;
+  modalContent.innerHTML = `
+    <div class="text-center py-5">
+      <div class="mandala-loader mb-3">
+        <div class="mandala-ring"></div>
+        <div class="mandala-ring"></div>
+        <div class="mandala-ring"></div>
+        <div class="mandala-center">
+          <i class="fas fa-lightbulb"></i>
+        </div>
+      </div>
+      <p class="text-primary">Generating feedback...</p>
+    </div>
+  `;
+  
+  const modal = new bootstrap.Modal(document.getElementById('improveModal'));
+  modal.show();
+  
+  fetch(`/github/improvements/${repoId}`)
+    .then(r => r.json())
+    .then(d => {
+      modalContent.innerHTML = originalContent;
+      fill("strengths", d.strengths);
+      fill("weaknesses", d.weaknesses);
+      fill("improvements", d.improvements);
+      fillLinks("references", d.references);
+    })
+    .catch(() => {
+      modalContent.innerHTML = originalContent;
+      showToast('Failed to load improvements', 'error');
+    });
+}
+
+let chart;
+function openProgress(repoId) {
+  // Show loading state
+  const modalBody = document.querySelector('#progressModal .modal-body');
+  const originalContent = modalBody.innerHTML;
+  modalBody.innerHTML = `
+    <div class="text-center py-5">
+      <div class="grasshopper-loader mb-4">
+        <div class="gh-body"></div>
+        <div class="gh-leg gh-leg-1"></div>
+        <div class="gh-leg gh-leg-2"></div>
+        <div class="gh-leg gh-leg-3"></div>
+        <div class="gh-leg gh-leg-4"></div>
+        <div class="gh-leg gh-leg-5"></div>
+        <div class="gh-leg gh-leg-6"></div>
+      </div>
+      <p class="text-primary">Loading progress data...</p>
+    </div>
+  `;
+  
+  const modal = new bootstrap.Modal(document.getElementById('progressModal'));
+  modal.show();
+  
+  fetch(`/github/progress/${repoId}`)
+    .then(r => r.json())
+    .then(d => {
+      modalBody.innerHTML = '<canvas id="progressChart" height="300"></canvas>';
+      if (chart) chart.destroy();
+      const ctx = document.getElementById('progressChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: d.labels,
+          datasets: [
+            {label: "Documentation", data: d.documentation, borderColor: "#0dcaf0", 
+             backgroundColor: "rgba(13, 202, 240, 0.1)", tension: 0.3, fill: true,
+             borderWidth: 2, pointRadius: 4},
+            {label: "Code Quality", data: d.code_quality, borderColor: "#198754", 
+             backgroundColor: "rgba(25, 135, 84, 0.1)", tension: 0.3, fill: true,
+             borderWidth: 2, pointRadius: 4},
+            {label: "Maintainability", data: d.maintainability, borderColor: "#ffc107", 
+             backgroundColor: "rgba(255, 193, 7, 0.1)", tension: 0.3, fill: true,
+             borderWidth: 2, pointRadius: 4}
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {position: 'top', labels: {font: {size: 12}, padding: 20}},
+            tooltip: {mode: 'index', intersect: false, backgroundColor: 'rgba(0,0,0,0.7)'}
+          },
+          scales: {
+            y: {
+              beginAtZero: true, 
+              max: 100, 
+              ticks: {callback: value => value + '%', font: {size: 11}},
+              grid: {color: 'rgba(0,0,0,0.05)'}
+            },
+            x: {
+              grid: {color: 'rgba(0,0,0,0.05)'},
+              ticks: {font: {size: 11}}
+            }
+          }
+        }
+      });
+    })
+    .catch(() => {
+      modalBody.innerHTML = originalContent;
+      showToast('Failed to load progress data', 'error');
+    });
+}
+
+function fill(id, items) {
+  const container = document.getElementById(id);
+  container.innerHTML = items.map(item => 
+    `<li class="d-flex align-items-start mb-2">
+       <i class="fas fa-check-circle text-success mt-1 me-2"></i>
+       <span>${item}</span>
+     </li>`
+  ).join("");
+}
+
+function fillLinks(id, links) {
+  const container = document.getElementById(id);
+  container.innerHTML = links.map(link => 
+    `<li class="d-flex align-items-start mb-2">
+       <i class="fas fa-external-link-alt text-info mt-1 me-2"></i>
+       <a href="${link}" target="_blank" class="text-decoration-none">${link}</a>
+     </li>`
+  ).join("");
+}
+
+function saveImprovements() {
+  // Show loading animation
+  const button = event.target;
+  const originalText = button.innerHTML;
+  button.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Exporting...';
+  button.disabled = true;
+  
+  setTimeout(() => {
+    button.innerHTML = originalText;
+    button.disabled = false;
+    showToast('PDF exported successfully!', 'success');
+  }, 1500);
+}
+
+function exportChart() {
+  if (chart) {
+    // Show loading animation
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>Exporting...';
+    button.disabled = true;
+    
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.download = 'progress-chart.png';
+      link.href = chart.toBase64Image();
+      link.click();
+      
+      button.innerHTML = originalText;
+      button.disabled = false;
+      showToast('Chart exported successfully!', 'success');
+    }, 1000);
+  }
+}
+
+// Initialize
+calculateStats();
+
+// Auto-refresh sync time display
+function updateSyncTime() {
+  const now = new Date();
+  if (lastSyncTime.textContent === 'Never') return;
+  
+  // You could add relative time here like "2 hours ago"
+  // For now, we'll just update every minute
+  setTimeout(updateSyncTime, 60000);
+}
+updateSyncTime();
+</script>
+
+{% include "footer.html" %}

@@ -1,0 +1,163 @@
+[
+  {
+    "title": "Python for Deep Learning Foundations",
+    "description": "Introduction to Python syntax, NumPy, and Pandas for numerical computations and data manipulation.",
+    "level": "beginner",
+    "skills": [
+      "Python syntax",
+      "NumPy arrays",
+      "Pandas data structures"
+    ],
+    "prerequisites": [],
+    "project_list": [
+      "Python basic operations project",
+      "Data preprocessing project"
+    ]
+  },
+  {
+    "title": "Neural Network Fundamentals",
+    "description": "Understanding perceptrons, activation functions, and loss functions in neural networks.",
+    "level": "beginner",
+    "skills": [
+      "Neural network architecture",
+      "Activation functions",
+      "Loss functions"
+    ],
+    "prerequisites": [
+      "Python for Deep Learning Foundations"
+    ],
+    "project_list": [
+      "Simple perceptron implementation project"
+    ]
+  },
+  {
+    "title": "Matrix Operations & Linear Algebra",
+    "description": "Mastery of matrix operations, vector spaces, and their role in neural network computations.",
+    "level": "beginner",
+    "skills": [
+      "Matrix multiplication",
+      "Linear algebra operations",
+      "Eigenvalues"
+    ],
+    "prerequisites": [
+      "Python for Deep Learning Foundations"
+    ],
+    "project_list": [
+      "Matrix operations practice project"
+    ]
+  },
+  {
+    "title": "Deep Learning Frameworks Basics",
+    "description": "Introduction to TensorFlow/PyTorch fundamentals including tensors and operations.",
+    "level": "beginner",
+    "skills": [
+      "Tensor operations",
+      "Model building",
+      "Gradient calculation"
+    ],
+    "prerequisites": [
+      "Neural Network Fundamentals"
+    ],
+    "project_list": [
+      "Tensor operation visualization project"
+    ]
+  },
+  {
+    "title": "Computer Vision Basics",
+    "description": "Image classification using convolutional neural networks (CNNs).",
+    "level": "intermediate",
+    "skills": [
+      "CNN architecture",
+      "Image preprocessing",
+      "Data augmentation"
+    ],
+    "prerequisites": [
+      "Deep Learning Frameworks Basics"
+    ],
+    "project_list": [
+      "Image classification project"
+    ]
+  },
+  {
+    "title": "Natural Language Processing",
+    "description": "Text processing with RNNs/LSTMs and word embeddings.",
+    "level": "intermediate",
+    "skills": [
+      "RNN architecture",
+      "Text sequence modeling",
+      "Embedding layers"
+    ],
+    "prerequisites": [
+      "Deep Learning Frameworks Basics"
+    ],
+    "project_list": [
+      "Text classification project"
+    ]
+  },
+  {
+    "title": "Advanced Architectures",
+    "description": "Exploration of GANs, transformers, and reinforcement learning models.",
+    "level": "advanced",
+    "skills": [
+      "Generative models",
+      "Transformer architectures",
+      "Reinforcement learning"
+    ],
+    "prerequisites": [
+      "Computer Vision Basics",
+      "Natural Language Processing"
+    ],
+    "project_list": [
+      "GAN image generation project",
+      "Transformer model implementation project"
+    ]
+  },
+  {
+    "title": "Optimization Techniques",
+    "description": "Advanced optimization methods including momentum, RMSprop, and adaptive learning rates.",
+    "level": "advanced",
+    "skills": [
+      "Optimization algorithms",
+      "Gradient descent variants",
+      "Learning rate scheduling"
+    ],
+    "prerequisites": [
+      "Deep Learning Frameworks Basics"
+    ],
+    "project_list": [
+      "Optimization comparison project"
+    ]
+  },
+  {
+    "title": "Real-World Deployment",
+    "description": "Model deployment pipelines, scaling, and monitoring in production environments.",
+    "level": "advanced",
+    "skills": [
+      "Model deployment",
+      "Cloud platforms",
+      "Monitoring systems"
+    ],
+    "prerequisites": [
+      "Advanced Architectures"
+    ],
+    "project_list": [
+      "Production pipeline deployment project"
+    ]
+  },
+  {
+    "title": "Specialized Topics",
+    "description": "Exploration of generative AI, ethical AI, and cutting-edge research applications.",
+    "level": "expert",
+    "skills": [
+      "Generative AI",
+      "Ethical AI",
+      "Research paper analysis"
+    ],
+    "prerequisites": [
+      "Real-World Deployment"
+    ],
+    "project_list": [
+      "Generative AI application project"
+    ]
+  }
+]

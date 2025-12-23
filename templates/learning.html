@@ -1,0 +1,233 @@
+{% include "header.html" %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+:root {
+  --primary: #4f46e5;
+  --dark: #111827;
+  --light: #f9fafb;
+  --card: #ffffff;
+  --border: #e5e7eb;
+}
+
+body {
+  background: var(--light);
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* HERO */
+.hero-card {
+  background: white;
+  color: var(--dark);
+  border-radius: 16px;
+  padding: 50px 30px;
+  border: 1px solid var(--border);
+}
+
+.hero-card h1 {
+  font-weight: 800;
+}
+
+.skill-input {
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 1.05rem;
+}
+
+.btn-generate {
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 12px 26px;
+}
+
+.btn-generate:hover {
+  background: #4338ca;
+}
+
+.quick-btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* STATUS */
+.status-card {
+  background: white;
+  border-radius: 14px;
+  padding: 30px;
+  border: 1px solid var(--border);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ROADMAP */
+.roadmap-card {
+  background: white;
+  border-radius: 14px;
+  padding: 22px;
+  border: 1px solid var(--border);
+}
+
+.badge-level {
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.project-list li {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+/* TOAST */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+</style>
+
+<div class="container py-5">
+
+  <!-- HERO -->
+  <div class="hero-card text-center mb-5">
+    <i class="fas fa-robot fa-2x mb-3 text-primary"></i>
+    <h1>AI-Powered Learning Path</h1>
+    <p class="text-muted mt-2">
+      Tell <strong>MANTIS</strong> powerd by ernie-4.5-21B-a3b-thinking and NOVITA
+    </p>
+
+    <div class="row justify-content-center mt-4">
+      <div class="col-lg-7">
+        <input
+          id="skillInput"
+          class="form-control skill-input text-center"
+          placeholder="e.g. Arduino, Robotics, Python, AI"
+        >
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+      <button class="btn btn-outline-secondary quick-btn" onclick="quick('Arduino')">Arduino</button>
+      <button class="btn btn-outline-secondary quick-btn" onclick="quick('Python')">Python</button>
+      <button class="btn btn-outline-secondary quick-btn" onclick="quick('Robotics')">Robotics</button>
+      <button class="btn btn-outline-secondary quick-btn" onclick="quick('AI')">AI</button>
+    </div>
+
+    <button class="btn btn-generate mt-4" onclick="generate()">
+      <i class="fas fa-magic me-2"></i>Generate Learning Path
+    </button>
+  </div>
+
+  <!-- STATUS -->
+  <div id="statusArea" style="display:none" class="mb-4">
+    <div class="status-card text-center">
+      <div class="loading-spinner mb-3"></div>
+      <h6 class="fw-bold">Generating roadmap…</h6>
+      <p class="text-muted mb-0">Designing structured projects</p>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div id="roadmapArea" style="display:none">
+    <h3 class="fw-bold mb-4">
+      <i class="fas fa-map me-2 text-primary"></i>Learning Roadmap
+    </h3>
+
+    <div id="roadmapList" class="row g-4"></div>
+  </div>
+
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+function quick(skill) {
+  document.getElementById("skillInput").value = skill;
+}
+
+function generate() {
+  const skill = document.getElementById("skillInput").value.trim();
+  if (!skill) {
+    toast("Please enter a skill", "warning");
+    return;
+  }
+
+  document.getElementById("statusArea").style.display = "block";
+  document.getElementById("roadmapArea").style.display = "none";
+
+  fetch("/learning/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ skill })
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("statusArea").style.display = "none";
+
+    if (!data.success) {
+      toast(data.error || "Generation failed", "danger");
+      return;
+    }
+
+    toast("Learning roadmap generated!", "success");
+    renderRoadmap(data.projects || data.roadmap || []);
+  })
+  .catch(() => {
+    document.getElementById("statusArea").style.display = "none";
+    toast("Server error. Try again.", "danger");
+  });
+}
+
+function renderRoadmap(projects) {
+  const list = document.getElementById("roadmapList");
+  list.innerHTML = "";
+
+  projects.forEach((p, i) => {
+    list.innerHTML += `
+      <div class="col-md-6 col-lg-4">
+        <div class="roadmap-card h-100">
+          <span class="badge bg-primary badge-level mb-2">${p.level}</span>
+          <h5 class="fw-bold mt-2">${i + 1}. ${p.title}</h5>
+          <p class="text-muted small">${p.description || ""}</p>
+
+          ${p.skills?.length ? `
+            <p class="small"><strong>Skills:</strong> ${p.skills.join(", ")}</p>` : ""}
+
+          ${p.project_list?.length ? `
+            <p class="fw-semibold mb-1">Projects:</p>
+            <ul class="project-list ps-3">
+              ${p.project_list.map(pr => `<li>${pr}</li>`).join("")}
+            </ul>` : ""}
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById("roadmapArea").style.display = "block";
+}
+
+function toast(msg, type) {
+  const t = document.createElement("div");
+  t.className = `alert alert-${type} shadow-sm`;
+  t.innerHTML = msg;
+  document.getElementById("toastContainer").appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+</script>
+
+{% include "footer.html" %}

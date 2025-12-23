@@ -1,0 +1,127 @@
+{% include "header.html" %}
+
+<div class="container mt-4">
+
+  <!-- SUMMARY -->
+  <div class="card shadow mb-4">
+    <div class="card-body text-center">
+      <h2>{{ username }}</h2>
+      <p class="text-muted">Developer Performance Report</p>
+      <h1 class="text-success">{{ overall_score }}%</h1>
+      <p>{{ summary }}</p>
+    </div>
+  </div>
+
+  <!-- CATEGORY PERFORMANCE -->
+  <div class="row text-center mb-4">
+    <div class="col-md-4">
+      <h6>Documentation</h6>
+      <div class="progress">
+        <div class="progress-bar bg-info" style="width: {{ avg_documentation }}%">
+          {{ avg_documentation }}%
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <h6>Code Quality</h6>
+      <div class="progress">
+        <div class="progress-bar bg-success" style="width: {{ avg_code_quality }}%">
+          {{ avg_code_quality }}%
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <h6>Maintainability</h6>
+      <div class="progress">
+        <div class="progress-bar bg-warning" style="width: {{ avg_maintainability }}%">
+          {{ avg_maintainability }}%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LANGUAGE CHART -->
+  <div class="card shadow mb-4">
+    <div class="card-body">
+      <h5>Language Strength</h5>
+      <canvas id="languageChart"></canvas>
+    </div>
+  </div>
+
+  <!-- FILTER -->
+  <div class="mb-3">
+    <select id="languageFilter" class="form-select">
+      <option value="all">All Languages</option>
+      {% for lang in language_avg.keys() %}
+        <option value="{{ lang }}">{{ lang }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- PROJECT LIST -->
+  <div class="row" id="projectsContainer">
+    {% for a in analyses %}
+    <div class="col-md-6 project-card mb-3" data-language="{{ a.language or 'Unknown' }}">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h6>{{ a.repo_url }}</h6>
+          <span class="badge bg-secondary">{{ a.language or "Unknown" }}</span>
+
+          <p class="mt-2 mb-1">
+            Documentation: {{ a.documentation_score }}%
+          </p>
+          <p class="mb-1">
+            Code Quality: {{ a.code_quality_score }}%
+          </p>
+          <p class="mb-0">
+            Maintainability: {{ a.maintainability_score }}%
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- CHART.JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+new Chart(document.getElementById("languageChart"), {
+  type: "bar",
+  data: {
+    labels: {{ language_avg.keys()|list|tojson }},
+    datasets: [{
+      label: "Average Score (%)",
+      data: {{ language_avg.values()|list|tojson }},
+      borderWidth: 1
+    }]
+  },
+  options: {
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100
+      }
+    }
+  }
+});
+</script>
+
+<!-- FILTER SCRIPT -->
+<script>
+document.getElementById("languageFilter").addEventListener("change", function () {
+  const value = this.value;
+  document.querySelectorAll(".project-card").forEach(card => {
+    card.style.display =
+      value === "all" || card.dataset.language === value
+        ? "block"
+        : "none";
+  });
+});
+</script>
+
+{% include "footer.html" %}

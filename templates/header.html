@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{% block title %}Dashboard{% endblock %}</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="icon" href="{{ url_for('static', filename='assets/images/favicon.svg') }}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/fonts/tabler-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/style-preset.css') }}">
+</head>
+
+<body data-pc-theme="light">
+
+<!-- Sidebar -->
+<nav class="pc-sidebar">
+  <div class="navbar-wrapper">
+    <div class="m-header">
+      <a href="{{ url_for('dashboard') }}" class="b-brand text-primary">
+        <img src="{{ url_for('static', filename='assets/images/logo-dark.svg') }}" class="logo-lg">
+      </a>
+    </div>
+
+ <ul class="pc-navbar">
+  <li class="pc-item">
+    <a href="{{ url_for('dashboard') }}" class="pc-link">
+      <i class="ti ti-dashboard"></i> Dashboard
+    </a>
+  </li>
+
+  <li class="pc-item">
+    <a href="{{ url_for('github') }}" class="pc-link">
+      <i class="ti ti-brand-github"></i> GitHub Projects
+    </a>
+  </li>
+
+  <li class="pc-item">
+    <a href="{{ url_for('learning') }}" class="pc-link">
+      <i class="ti ti-book"></i> Learning Zone
+    </a>
+  </li>
+
+  <li class="pc-item">
+    <a href="{{ url_for('logout') }}" class="pc-link text-danger">
+      <i class="ti ti-power"></i> Logout
+    </a>
+  </li>
+</ul>
+
+  </div>
+</nav>
+
+<!-- Header -->
+<header class="pc-header">
+  <div class="header-wrapper ms-auto">
+    <ul class="list-unstyled">
+      <li class="dropdown pc-h-item header-user-profile">
+        <a class="pc-head-link dropdown-toggle" data-bs-toggle="dropdown">
+          <img src="{{ url_for('static', filename='assets/images/user/avatar-2.jpg') }}" class="user-avtar">
+          <span>{{ username }}</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-end">
+          <a href="{{ url_for('logout') }}" class="dropdown-item">
+            <i class="ti ti-power"></i> Logout
+          </a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<div class="pc-container">
+  <div class="pc-content">
