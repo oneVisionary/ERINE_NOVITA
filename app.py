@@ -9,24 +9,97 @@ from services.github_analyzer import analyze_repo
 max_tokens=4096
 from datetime import datetime
 from flask_cors import CORS
-
-last_sync_time = datetime.now().strftime("%b %d, %Y %I:%M %p")
-
-app = Flask(__name__)
-CORS(app)
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
-
-
-DATABASE = "users.db"
-
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
 import json
 import re
+last_sync_time = datetime.now().strftime("%b %d, %Y %I:%M %p")
+DATABASE = "users.db"
+
+# ================= DATABASE =================
+def get_db():
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def create_table():
+    conn = get_db()
+
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        email TEXT UNIQUE,
+        password TEXT,
+        github_username TEXT
+    )
+    """)
+
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS repositories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        repo_url TEXT,
+        language TEXT,
+        UNIQUE(user_id, repo_url)
+    )
+    """)
+
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS repo_analysis (
+        repo_id INTEGER UNIQUE,
+        documentation_score INTEGER,
+        code_quality_score INTEGER,
+        maintainability_score INTEGER,
+        developer_level TEXT,
+        strengths TEXT,
+        weaknesses TEXT,
+        improvements TEXT,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS learning_roadmaps (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        skill TEXT,
+        roadmap_json TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    conn.execute("""
+    CREATE TABLE IF NOT EXISTS repo_analysis_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        repo_id INTEGER,
+        documentation_score INTEGER,
+        code_quality_score INTEGER,
+        maintainability_score INTEGER,
+        developer_level TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+# ================= AUTH =================
 
 # ---------------- LOAD ENV ----------------
 load_dotenv()
+
+app = Flask(__name__)
+CORS(app)
+app.secret_key = os.getenv("FLASK_SECRET_KEY")
+
+# ✅ CREATE DB + TABLES AT APP STARTUP (RENDER SAFE)
+with app.app_context():
+    create_table()
+
+
+
 
 NOVITA_API_KEY = os.getenv("NOVITA_API_KEY")
 if not NOVITA_API_KEY:
@@ -166,75 +239,7 @@ Generate the FULL 10-project roadmap now.
         return {"error": "Internal server error"}, 500
 
 
-# ================= DATABASE =================
-def get_db():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
 
-
-def create_table():
-    conn = get_db()
-
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
-        email TEXT UNIQUE,
-        password TEXT,
-        github_username TEXT
-    )
-    """)
-
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS repositories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        repo_url TEXT,
-        language TEXT,
-        UNIQUE(user_id, repo_url)
-    )
-    """)
-
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS repo_analysis (
-        repo_id INTEGER UNIQUE,
-        documentation_score INTEGER,
-        code_quality_score INTEGER,
-        maintainability_score INTEGER,
-        developer_level TEXT,
-        strengths TEXT,
-        weaknesses TEXT,
-        improvements TEXT,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS learning_roadmaps (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        skill TEXT,
-        roadmap_json TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-
-    conn.execute("""
-    CREATE TABLE IF NOT EXISTS repo_analysis_history (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        repo_id INTEGER,
-        documentation_score INTEGER,
-        code_quality_score INTEGER,
-        maintainability_score INTEGER,
-        developer_level TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-
-# ================= AUTH =================
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
     if request.method == "POST":
@@ -1057,7 +1062,7 @@ def get_current_roadmap():
     return json.loads(row["roadmap_json"])
 
 if __name__ == "__main__":
-    create_table()
+
     app.run(debug=True)
 
 
