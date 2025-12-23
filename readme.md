@@ -5,6 +5,8 @@
 
 An **AI-driven learning and developer growth platform** that combines **personalized learning roadmaps**, **GitHub repository analysis**, and **AI-generated developer profiling** using **ERNIE 4.5 (via Novita AI)**.
 
+
+
 This platform helps developers:
 
 * Learn **any skill step-by-step**
@@ -19,7 +21,7 @@ This platform helps developers:
 
 ### 🔹 ERNIE 4.5 (Baidu) via Novita AI
 
-**Model:** `baidu/ernie-4.5-21B-a3b-thinking`
+**Model:** `baidu/ernie-4.5-21B-a3b-thinking`, `baidu/ernie-4.5-vl-424b-a47b`
 
 ERNIE is the **core intelligence** behind the platform.
 
